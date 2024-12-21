@@ -1,0 +1,45 @@
+# GET http://localhost:8080/api/analyze
+# content-Type: application/json
+
+GET http://localhost:8080/v3/api-docs 
+content-Type: application/json
+
+###
+POST http://localhost:8080/api/analyze 
+content-Type: application/json
+
+{
+  "sentence": "I like DJL. DJL is the best DL framework!"
+}
+
+###
+POST http://localhost:8080/api/analyze 
+content-Type: application/json
+
+{
+  "sentence": "I like Red Hat Developer Hub. It's is the best Kubernetes based portal I've ever had!"
+}
+
+###
+POST http://localhost:8080/api/analyze 
+content-Type: application/json
+
+{
+  "sentence": "I don't like Dil. Of all the ingredients in all the world, this is the one I avoid the most!"
+}
+
+###
+POST http://localhost:8080/api/analyze 
+content-Type: application/json
+
+{
+  "sentence": "I do like Bananas. But I don't like them too ripe, and I don't like them under-ripe either. They're OK if they're just right."
+}
+
+### Negative cases
+POST http://localhost:8080/api/analyze 
+content-Type: application/json
+
+{
+  "sentence": ""
+}

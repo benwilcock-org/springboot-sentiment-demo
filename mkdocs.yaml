@@ -1,0 +1,11 @@
+site_name: springboot-sentiment-demo
+site_description: Contains the techdocs for springboot-sentiment-demo
+repo_url: https://github.com/benwilcock-org/springboot-sentiment-demo
+edit_uri: edit/main/docs
+
+plugins:
+  - techdocs-core
+
+# Note for content editors, edit only the section below
+nav:
+  - springboot-sentiment-demo Documentation: index.md

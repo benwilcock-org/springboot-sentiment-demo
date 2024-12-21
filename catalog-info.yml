@@ -1,0 +1,54 @@
+# This component is already included in the 'Polyglot Demo' system here: https://github.com/benwilcock/backstage-catalogs/blob/main/system-polyglot-demo.yml
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: springboot-sentiment-demo
+  description: Spring Boot Deep Java Learning (ML) Demo
+  links:
+    - url: https://github.com/benwilcock-org/springboot-djl-demo
+      title: Source Code on GitHub
+      icon: github
+      type: source
+  tags:
+    - java
+    - spring
+    - web
+  annotations:
+    backstage.io/kubernetes-id: springboot-sentiment-demo
+    backstage.io/techdocs-ref: dir:.
+    github.com/project-slug: benwilcock-org/springboot-sentiment-demo
+    jenkins.io/job-full-name: benwilcock-org/springboot-sentiment-demo
+spec:
+  type: api
+  lifecycle: experimental
+  system: system:default/red-hat-developer-hub
+  owner: user:default/benwilcock
+  providesApis:
+    - sentiments-api
+  profile:
+    displayName: Sentiment Analysis Demo Application
+
+# APIs
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: sentiments-api
+  description: Used to perform sentiment analysis using a REST style API.
+  links:
+    - url: https://github.com/benwilcock-org/springboot-sentiment-demo
+      title: Source Code on GitHub
+      icon: github
+      type: source
+  annotations:
+    # backstage.io/kubernetes-label-selector: "app.kubernetes.io/part-of=springboot-djl-demo"
+    # backstage.io/techdocs-ref: url:https://github.com/benwilcock/springboot-djl-demo/blob/main/
+spec:
+  type: openapi
+  lifecycle: production
+  owner: user:default/benwilcock
+  system: system:default/red-hat-developer-hub
+  definition:
+    $text: https://github.com/benwilcock-org/springboot-sentiment-demo/blob/main/openapi/openapi.json
+---
