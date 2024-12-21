@@ -26,12 +26,14 @@ This command will start the Spring Boot application, and the API will be availab
 ## How to Test the Project
 You can test the API using the provided HTTP request examples in the tests.http file. Here is an example of how to test the sentiment analysis endpoint:
 
-```POST http://localhost:8080/api/analyze 
+```text
+POST http://localhost:8080/api/analyze 
 content-Type: application/json
 
 {
-  "sentence": "I like DJL. DJL is the best DL framework!"
-}```
+  "sentence": "I like DJL. DJL is the best Deep Learming library I know!"
+}
+```
 
 You can also use the following command to run the tests:
 
