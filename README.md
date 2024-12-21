@@ -11,4 +11,4 @@ content-Type: application/json
 }
 ```
 
-see the file [local-api-tests.http](local-api-tests.http) for more examples.
+see the file [tests.http](tests.http) for more examples.
