@@ -3,9 +3,7 @@
 // Platform: Linux ARM64 (aarch64)
 
 pipeline {
-    agent {
-        label 'linux && aarch64'  // ARM64 requirement for PyTorch natives
-    }
+    agent any
 
     tools {
         maven 'maven-3'  // Must match Jenkins tool name exactly
