@@ -67,8 +67,12 @@ Documentation served through Backstage TechDocs:
   4. Archive build artifacts (POM files)
   5. Clean workspace (removes target/ and .m2/repository/)
 - **Build triggers**:
-  - Scheduled: Weekly builds every Monday around 8 AM (cron: `H 8 * * 1`)
-  - GitHub webhook: Automatic builds on pushes to main branch
+  - Scheduled: Weekly builds every Monday around 8 AM (cron: `H 8 * * 1`) ✅ Active
+  - GitHub webhook: Configured (ID: 603227540) but not functional ⚠️
+    - Webhook exists and properly configured
+    - Currently blocked by router/firewall (webhook times out)
+    - Requires router port forwarding to enable automatic builds on push
+    - Workaround: Use "Build Now" button for manual builds
 - **Build health**: 75+ builds executed with 100% recent stability
 - **Pipeline mode**: Runs in sandbox mode for security
 - **Migration date**: 2026-03-28

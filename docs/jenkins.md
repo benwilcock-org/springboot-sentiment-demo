@@ -178,6 +178,40 @@ After configuration, verify the following:
 
 For automatic builds on push, configure GitHub webhook. The webhook notifies Jenkins when code is pushed to the `main` branch.
 
+### Current Status ⚠️
+
+**Webhook Configured but Not Functional**
+
+The GitHub webhook is properly configured but currently **not working** due to network limitations:
+
+**What's Working:**
+- ✅ Webhook created on GitHub (ID: 603227540)
+- ✅ Jenkins has `GitHubPushTrigger` enabled
+- ✅ Manual builds work ("Build Now" button)
+- ✅ Scheduled builds work (weekly on Mondays at 8 AM)
+
+**What's Not Working:**
+- ❌ Automatic builds on push (webhook times out)
+- ❌ GitHub cannot reach Jenkins from external network
+
+**Root Cause:**
+Router/firewall blocks incoming webhook requests from GitHub's servers to Jenkins. GitHub sends the webhook correctly, but it times out waiting for Jenkins to respond.
+
+**Evidence:**
+```bash
+# Check webhook delivery status
+gh api repos/benwilcock-org/springboot-sentiment-demo/hooks/603227540/deliveries --jq '.[0] | {status_code: .response.status, event, delivered_at}'
+# Returns: status_code: 0 (timeout - no response received)
+```
+
+**To Enable Webhooks:**
+Configure router port forwarding to allow incoming HTTPS traffic (port 443) to reach Jenkins. Once router is configured, webhooks will work automatically - no code or Jenkins changes needed.
+
+**Current Workarounds:**
+1. **Manual builds:** Click "Build Now" in Jenkins after pushing code
+2. **Scheduled builds:** Automatic weekly build every Monday at 8 AM
+3. **Alternative:** Use SCM polling (see "Troubleshooting" section)
+
 ### Method 1: Using GitHub Web UI
 
 1. Navigate to repository: `https://github.com/benwilcock-org/springboot-sentiment-demo`
@@ -334,43 +368,87 @@ pipeline {
 
 ### Webhook Not Triggering Builds
 
-**Cause:** GitHub webhook not configured, deleted, or Jenkins not accessible
+**Possible Causes:**
+1. Webhook not configured on GitHub
+2. Webhook configured but timing out (status_code: 0)
+3. Jenkins URL not accessible from internet
+4. Router/firewall blocking incoming webhook traffic
 
-**Diagnosis:**
+**Diagnosis Steps:**
+
+**Step 1: Check if webhook exists**
 ```bash
-# Check if webhook exists
 gh api repos/benwilcock-org/springboot-sentiment-demo/hooks --jq '.[] | {id, active, url: .config.url}'
 ```
 
-If the command returns `[]` (empty array), no webhook exists.
+If returns `[]` (empty array), webhook doesn't exist - create it using instructions above.
 
-**Solution:**
-1. **Create webhook** using GitHub CLI (see "GitHub Webhook Configuration" section):
-   ```bash
-   gh api --method POST \
-     repos/benwilcock-org/springboot-sentiment-demo/hooks \
-     -f name='web' \
-     -f config[url]='https://jenkins.wibbles.duckdns.org/github-webhook/' \
-     -f config[content_type]='json' \
-     -f events[]='push' \
-     -F active=true
+**Step 2: Check webhook delivery status**
+```bash
+gh api repos/benwilcock-org/springboot-sentiment-demo/hooks/603227540/deliveries --jq '.[0] | {status_code: .response.status, event, delivered_at, duration}'
+```
+
+**Interpreting results:**
+- `status_code: 200` - ✅ Webhook working correctly
+- `status_code: 404` - ❌ Jenkins URL incorrect or not found
+- `status_code: 500` - ❌ Jenkins error processing webhook
+- `status_code: 0` or `null` - ❌ **Timeout - Jenkins not accessible from internet**
+
+**Step 3: Test Jenkins webhook endpoint accessibility**
+```bash
+# From external network (not local):
+curl -v https://jenkins.wibbles.duckdns.org/github-webhook/
+# Expected: HTTP 405 (Method Not Allowed) - endpoint exists but requires POST
+# If timeout: Router/firewall blocking incoming traffic
+```
+
+**Solutions Based on Diagnosis:**
+
+**If webhook doesn't exist:**
+Create webhook using GitHub CLI (see "GitHub Webhook Configuration" section).
+
+**If status_code: 0 (timeout) - CURRENT ISSUE:**
+
+**Problem:** Router/firewall blocks incoming webhook requests from GitHub.
+
+**Solution A: Configure Router Port Forwarding (Recommended)**
+1. Access router admin interface
+2. Configure port forwarding:
+   - External port: 443 (HTTPS)
+   - Internal IP: Jenkins server IP
+   - Internal port: 8080 (or Jenkins port)
+3. Test webhook delivery after configuring
+
+**Solution B: Use SCM Polling Instead**
+
+If router configuration not possible, use polling as fallback:
+
+1. Update Jenkinsfile to add SCM polling:
+   ```groovy
+   triggers {
+       cron('H 8 * * 1')           // Keep weekly build
+       pollSCM('H/5 * * * *')      // Poll GitHub every 5 minutes
+   }
    ```
 
-2. **Test webhook** with a commit or manual trigger:
-   ```bash
-   # Get webhook ID from previous command, then test
-   gh api -X POST repos/benwilcock-org/springboot-sentiment-demo/hooks/603227540/test
-   ```
+2. Commit and push changes
 
-3. **Verify Jenkins receives webhook:**
-   - Push a test commit
-   - Check Jenkins job starts within 30 seconds
-   - Look for "Started by GitHub push" in build console
+3. Jenkins will poll GitHub every 5 minutes and trigger build if changes detected
 
-4. **Check webhook delivery history** on GitHub:
-   - Go to repo **Settings > Webhooks > Recent Deliveries**
-   - Verify HTTP 200 responses
-   - If 404/500 errors, check Jenkins URL is accessible from internet
+**Trade-offs:**
+- ✅ Works without incoming webhooks
+- ✅ No router configuration needed
+- ❌ 5-minute delay before builds start
+- ❌ More GitHub API requests (polling overhead)
+
+**Solution C: Manual Builds (Current Workaround)**
+- Use "Build Now" button after pushing code
+- Scheduled weekly build continues to work
+
+**If status_code: 404 or 500:**
+- Check Jenkins URL is correct in webhook configuration
+- Verify Jenkins is running and accessible
+- Check Jenkins logs for errors
 
 ## Build Configuration Details
 
