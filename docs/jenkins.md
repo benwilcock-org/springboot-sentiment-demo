@@ -4,22 +4,24 @@ This page documents the Jenkins continuous integration setup for the Spring Boot
 
 ## Overview
 
-This project uses **Pipeline as Code** with a `Jenkinsfile` stored in the repository root. The pipeline runs on Linux ARM64 (aarch64) architecture and executes Maven-based builds with automated testing.
+This project uses **Pipeline as Code** with a `Jenkinsfile` stored in the repository root. The pipeline runs on any available Jenkins agent and executes Maven-based builds with automated testing.
 
 **Key Information:**
 - **Pipeline location:** `/Jenkinsfile` in repository root
 - **Pipeline type:** Declarative Pipeline (runs in sandbox mode)
 - **Jenkins job:** `benwilcock-org/springboot-sentiment-demo`
-- **Build platform:** Linux ARM64 (aarch64) - required for PyTorch native libraries
+- **Agent:** Uses any available agent (`agent any`)
+- **Maven tool:** `maven-3` (configured in Jenkins Global Tool Configuration)
+- **JDK:** Uses Jenkins default JDK (JDK 21 from jenkins/jenkins:lts-jdk21 image)
 
 ## Jenkinsfile Structure
 
-The Jenkinsfile defines four stages:
+The Jenkinsfile defines three main stages:
 
 ### Stage 1: Checkout
 - Checks out code from SCM (GitHub)
 - Logs the latest commit for debugging
-- Verifies ARM64 platform with `uname -a`
+- Verifies platform with `uname -a`
 
 ### Stage 2: Build and Test
 - Executes `mvn clean test` to compile code and run unit tests
@@ -42,25 +44,28 @@ The pipeline is triggered by:
 1. **Scheduled Builds:** Weekly on Mondays around 8 AM (cron: `H 8 * * 1`)
 2. **GitHub Webhook:** Automatic builds on push to `main` branch
 
-## Platform Requirements
+## Tool Requirements
 
-### ARM64 Architecture
-This project **requires** Linux ARM64 (aarch64) architecture because:
-- DJL downloads PyTorch native libraries during build
-- PyTorch natives are platform-specific
-- Using wrong architecture causes build failures
+### Maven Configuration
+The pipeline requires Maven to be configured in Jenkins:
 
-The Jenkinsfile enforces this with: `agent { label 'linux && aarch64' }`
+| Tool Name | Type | Version | Configuration |
+|-----------|------|---------|---------------|
+| `maven-3` | Maven | 3.x | Configured in Global Tool Configuration |
 
-### Tool Configuration
-The pipeline requires two tools configured in Jenkins:
+**Important:** The tool name `maven-3` in the Jenkinsfile is **case-sensitive** and must match the Jenkins Global Tool Configuration exactly.
 
-| Tool Name | Type | Version | Usage |
-|-----------|------|---------|-------|
-| `Maven 3` | Maven | 3.x | Build and test execution |
-| `JDK-17` | JDK | 17 | Java compilation and runtime |
+### JDK Configuration
+The Jenkinsfile does **not** specify a JDK tool, which means:
+- Jenkins uses its default JDK (JDK 21 from the jenkins/jenkins:lts-jdk21 image)
+- No additional JDK configuration required in Global Tool Configuration
+- The project compiles with Java 17 target (configured in pom.xml), which is compatible with JDK 21
 
-**Important:** Tool names in Jenkinsfile are **case-sensitive** and must match Jenkins configuration exactly.
+### Platform Notes
+The Jenkinsfile uses `agent any`, meaning:
+- Build can run on any available Jenkins agent
+- No specific platform labels required
+- Jenkins will schedule the build on the first available agent
 
 ## Configuring Jenkins to Use the Jenkinsfile
 
@@ -80,24 +85,21 @@ Navigate to **Manage Jenkins > Global Tool Configuration**:
 **Maven Configuration:**
 - Section: **Maven**
 - Click **Add Maven**
-- Name: `Maven 3` (exact match required)
+- Name: `maven-3` (exact match required - case sensitive!)
 - Install automatically: ✓ (recommended)
 - Version: Latest Maven 3.x
 
 **JDK Configuration:**
-- Section: **JDK**
-- Click **Add JDK**
-- Name: `JDK-17` (exact match required)
-- Install automatically: ✓ (recommended)
-- Version: Java 17
+- No additional JDK configuration needed
+- Jenkins uses its default JDK (JDK 21)
+- The Jenkinsfile does not specify a JDK tool
 
 #### 2. Agent Configuration
 
-Ensure at least one agent has the correct labels:
-
-Navigate to **Manage Jenkins > Nodes > [Agent Name] > Configure**:
-- **Labels:** `linux aarch64` (space-separated)
-- Verify agent is actually ARM64 architecture
+**No specific agent labels required:**
+- The Jenkinsfile uses `agent any`
+- Build will run on any available Jenkins agent
+- No platform-specific labels needed
 
 #### 3. GitHub Credentials
 
@@ -162,14 +164,15 @@ This is the **critical section** for using the Jenkinsfile:
 After configuration, verify the following:
 
 - [ ] Build starts and checks out code from GitHub
-- [ ] Build logs show: `Running on` an ARM64 agent
+- [ ] Build logs show: `Running on` an available agent
 - [ ] Build logs show: `using credential` for GitHub
-- [ ] Maven 3 tool resolves successfully
-- [ ] JDK-17 tool resolves successfully
+- [ ] Build logs show: `Obtained Jenkinsfile from git`
+- [ ] Maven tool `maven-3` resolves successfully
 - [ ] `mvn clean test` executes
 - [ ] JUnit test results appear in build summary
 - [ ] POM artifacts archived successfully
 - [ ] Workspace cleanup executes
+- [ ] Build completes with "Finished: SUCCESS"
 
 ## GitHub Webhook Configuration
 
@@ -195,25 +198,60 @@ For automatic builds on push, configure GitHub webhook:
 
 ## Troubleshooting
 
-### Build Fails: "No tool named Maven 3"
+### Build Fails: "Tool type 'maven' does not have an install of 'Maven 3'"
 
-**Cause:** Tool name mismatch between Jenkinsfile and Jenkins configuration
+**Actual Error from Build #73:**
+```
+WorkflowScript: 11: Tool type "maven" does not have an install of "Maven 3" configured - did you mean "maven-3"?
+```
+
+**Cause:** Tool name in Jenkinsfile doesn't match Jenkins Global Tool Configuration
 
 **Solution:**
 1. Go to **Manage Jenkins > Global Tool Configuration > Maven**
-2. Verify tool name is exactly `Maven 3` (case-sensitive)
-3. If different, either:
-   - Rename Jenkins tool to match Jenkinsfile, OR
-   - Update Jenkinsfile to match Jenkins tool name
+2. Find the actual Maven tool name (e.g., `maven-3`)
+3. Update Jenkinsfile to use the exact name:
+   ```groovy
+   tools {
+       maven 'maven-3'  // Must match exactly (case-sensitive)
+   }
+   ```
 
-### Build Fails: Platform Issues
+### Build Fails: "Tool type 'jdk' does not have an install of 'JDK-17'"
 
-**Cause:** Build running on wrong architecture (not ARM64)
+**Actual Error from Build #73:**
+```
+WorkflowScript: 12: Tool type "jdk" does not have an install of "JDK-17" configured - did you mean "null"?
+```
+
+**Cause:** Jenkinsfile specified a JDK tool that doesn't exist in Jenkins configuration
 
 **Solution:**
-1. Check agent labels: **Manage Jenkins > Nodes > [Agent] > Configure**
-2. Ensure labels include both `linux` AND `aarch64`
-3. Verify agent is actually ARM64: SSH to agent and run `uname -m` (should output `aarch64`)
+Remove the `jdk` line from Jenkinsfile tools section:
+```groovy
+tools {
+    maven 'maven-3'
+    // No jdk specification - uses Jenkins default JDK 21
+}
+```
+
+### Build Stuck: "Waiting to schedule task" - Agent Label Not Found
+
+**Actual Error from Build #74:**
+```
+Still waiting to schedule task
+'Jenkins' doesn't have label 'linux&&aarch64'
+```
+
+**Cause:** Jenkinsfile requires agent labels that don't exist in Jenkins configuration
+
+**Solution:**
+Change the agent specification in Jenkinsfile to use any available agent:
+```groovy
+pipeline {
+    agent any  // Use any available agent instead of specific labels
+}
+```
 
 ### Build Fails: Checkout Issues
 
@@ -224,14 +262,15 @@ For automatic builds on push, configure GitHub webhook:
 2. Test GitHub connectivity from agent
 3. Check Repository URL in job configuration is correct
 
-### Build Slow: Large Downloads
+### Build Slow: Large Maven Downloads
 
-**Cause:** DJL downloads PyTorch native libraries on every clean build
+**Cause:** Maven downloads dependencies on first build or after workspace cleanup
 
 **Solution:**
-1. Consider persistent Maven cache across builds
-2. Reduce workspace cleanup aggressiveness in Jenkinsfile
-3. This is expected behavior for ARM64 platform
+1. First build after migration will be slower (downloading dependencies)
+2. Subsequent builds should be faster
+3. Consider persistent Maven cache across builds if using dedicated agents
+4. This is expected behavior - workspace cleanup removes `.m2/repository/` to save disk space
 
 ### Webhook Not Triggering Builds
 
@@ -268,20 +307,33 @@ After every build (success or failure):
 
 If Jenkins server needs to be rebuilt:
 
-1. **Install Jenkins** on new server
-2. **Configure tools** (Maven 3, JDK-17) - see "Prerequisites" above
-3. **Configure agent** with ARM64 labels
-4. **Set up GitHub credentials**
-5. **Create job** following "Job Configuration Steps" above
-6. **Configure webhook** on GitHub repository
+1. **Install Jenkins** on new server (e.g., jenkins/jenkins:lts-jdk21)
+2. **Configure Maven tool** in Global Tool Configuration:
+   - Navigate to **Manage Jenkins > Global Tool Configuration > Maven**
+   - Add Maven with name: `maven-3` (exact match, case-sensitive)
+3. **Set up GitHub credentials** in **Manage Jenkins > Credentials**
+4. **Create job** following "Job Configuration Steps" above
+5. **Configure webhook** on GitHub repository
 
 All pipeline logic is in the `Jenkinsfile` in the repository - no inline scripts to recover.
 
 ## Build History
 
+### Migration Timeline
+
 - **Migration date:** 2026-03-28 (from inline pipeline to Jenkinsfile)
-- **Builds before migration:** 72+ builds with 100% stability
+- **Builds before migration:** #1-72 (72+ builds with 100% stability using inline pipeline)
+- **Migration builds:**
+  - **Build #73 (FAILED):** Tool name mismatch - Jenkinsfile used `Maven 3` and `JDK-17` which didn't exist
+  - **Build #74 (ABORTED):** Agent label issue - stuck waiting for `linux && aarch64` labels
+  - **Build #75 (SUCCESS):** First successful Jenkinsfile build after fixing tool names and agent
 - **Build history preserved:** Yes, build numbers continue incrementing
+
+### Fixes Applied During Migration
+
+1. Changed Maven tool from `Maven 3` to `maven-3` to match Jenkins configuration
+2. Removed JDK tool specification (uses Jenkins default JDK 21)
+3. Changed agent from `label 'linux && aarch64'` to `agent any`
 
 ## Related Documentation
 

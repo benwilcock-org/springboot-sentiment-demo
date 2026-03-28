@@ -58,18 +58,21 @@ Documentation served through Backstage TechDocs:
 **Build Configuration**:
 - **Pipeline location**: `Jenkinsfile` in repository root (Pipeline as Code)
 - **Pipeline type**: Declarative Pipeline
+- **Agent**: Uses any available Jenkins agent (`agent any`)
+- **Tools**: Maven tool `maven-3`, uses default Jenkins JDK (JDK 21)
 - **Build steps**:
   1. Checkout from SCM
-  2. Execute `mvn clean test` using Maven 3 and JDK 17
+  2. Execute `mvn clean test` using Maven 3
   3. Publish JUnit test results
   4. Archive build artifacts (POM files)
+  5. Clean workspace (removes target/ and .m2/repository/)
 - **Build triggers**:
   - Scheduled: Weekly builds every Monday around 8 AM (cron: `H 8 * * 1`)
   - GitHub webhook: Automatic builds on pushes to main branch
-- **Build platform**: Linux ARM64 (aarch64) - affects PyTorch native library downloads
-- **Build health**: 72+ builds executed with 100% recent stability
+- **Build health**: 75+ builds executed with 100% recent stability
 - **Pipeline mode**: Runs in sandbox mode for security
 - **Migration date**: 2026-03-28
+- **First successful build from Jenkinsfile**: Build #75 (2026-03-28)
 - **Documentation**: See TechDocs Jenkins CI page for configuration details
 
 **Note**: Part of the larger 'Polyglot Demo' system (see comment line 1 in catalog-info.yml).
