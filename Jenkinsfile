@@ -8,8 +8,7 @@ pipeline {
     }
 
     tools {
-        maven 'Maven 3'  // Must match Jenkins tool name exactly
-        jdk 'JDK-17'     // Must match Jenkins tool name exactly
+        maven 'maven-3'  // Must match Jenkins tool name exactly
     }
 
     options {
