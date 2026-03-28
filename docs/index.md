@@ -47,4 +47,15 @@ This will execute the unit tests and integration tests defined in the project.
 
 The API documentation is automatically generated using Springdoc OpenAPI and is available at http://localhost:8080/v3/api-docs.
 
+## Continuous Integration
+
+This project uses Jenkins for continuous integration with Pipeline as Code:
+
+- **Build Schedule:** Weekly builds every Monday at 8 AM
+- **Manual Builds:** Available via Jenkins "Build Now" button
+- **Pipeline:** Defined in `Jenkinsfile` at repository root
+- **Build Status:** 75+ successful builds with 100% recent stability
+
+For complete Jenkins configuration details, see the [Jenkins CI Configuration](jenkins.md) page.
+
 For more information, see the README.md file. 
