@@ -176,9 +176,9 @@ After configuration, verify the following:
 
 ## GitHub Webhook Configuration
 
-For automatic builds on push, configure GitHub webhook:
+For automatic builds on push, configure GitHub webhook. The webhook notifies Jenkins when code is pushed to the `main` branch.
 
-### On GitHub Repository
+### Method 1: Using GitHub Web UI
 
 1. Navigate to repository: `https://github.com/benwilcock-org/springboot-sentiment-demo`
 2. Go to **Settings > Webhooks > Add webhook**
@@ -188,13 +188,73 @@ For automatic builds on push, configure GitHub webhook:
 6. **Active:** ✓
 7. Click **Add webhook**
 
+### Method 2: Using GitHub CLI (Recommended for Automation)
+
+For disaster recovery or scripted setup, use the GitHub CLI:
+
+```bash
+gh api \
+  --method POST \
+  -H "Accept: application/vnd.github+json" \
+  repos/benwilcock-org/springboot-sentiment-demo/hooks \
+  -f name='web' \
+  -f config[url]='https://jenkins.wibbles.duckdns.org/github-webhook/' \
+  -f config[content_type]='json' \
+  -F config[insecure_ssl]=0 \
+  -f events[]='push' \
+  -F active=true
+```
+
+**Webhook created:** 2026-03-28 (ID: 603227540)
+
+### Verifying Webhook Exists
+
+To check if webhook is configured:
+
+```bash
+# List all webhooks for the repository
+gh api repos/benwilcock-org/springboot-sentiment-demo/hooks --jq '.[] | {id, active, url: .config.url, events}'
+```
+
+Expected output:
+```json
+{
+  "id": 603227540,
+  "active": true,
+  "url": "https://jenkins.wibbles.duckdns.org/github-webhook/",
+  "events": ["push"]
+}
+```
+
+### Testing the Webhook
+
+After creating the webhook, test it:
+
+1. **Manual test via GitHub API:**
+   ```bash
+   gh api -X POST repos/benwilcock-org/springboot-sentiment-demo/hooks/603227540/test
+   ```
+
+2. **Real test via code push:**
+   - Make any commit and push to `main` branch
+   - Check Jenkins for automatic build trigger
+   - Verify build starts within ~30 seconds of push
+
+3. **Check webhook delivery history:**
+   - Go to GitHub repo **Settings > Webhooks**
+   - Click on the webhook
+   - View **Recent Deliveries** tab
+   - Verify responses are `200 OK`
+
 ### On Jenkins Server
 
-1. Install **GitHub Plugin** (if not already installed)
-2. Navigate to **Manage Jenkins > Configure System**
-3. Section: **GitHub**
-4. Add GitHub Server configuration if needed
-5. Test connection
+The Jenkins job is already configured to accept GitHub webhooks:
+
+1. **GitHub Plugin** is installed
+2. Job has `GitHubPushTrigger` enabled (configured via Jenkinsfile)
+3. No additional Jenkins configuration needed
+
+**Important:** The webhook triggers builds automatically on push. The cron schedule (`H 8 * * 1`) provides a backup in case webhooks fail.
 
 ## Troubleshooting
 
@@ -274,13 +334,43 @@ pipeline {
 
 ### Webhook Not Triggering Builds
 
-**Cause:** GitHub webhook not configured or Jenkins not accessible
+**Cause:** GitHub webhook not configured, deleted, or Jenkins not accessible
+
+**Diagnosis:**
+```bash
+# Check if webhook exists
+gh api repos/benwilcock-org/springboot-sentiment-demo/hooks --jq '.[] | {id, active, url: .config.url}'
+```
+
+If the command returns `[]` (empty array), no webhook exists.
 
 **Solution:**
-1. Check webhook configuration on GitHub repository
-2. Verify webhook delivery history shows successful deliveries
-3. Check Jenkins is accessible from internet at webhook URL
-4. Verify GitHub plugin installed and configured
+1. **Create webhook** using GitHub CLI (see "GitHub Webhook Configuration" section):
+   ```bash
+   gh api --method POST \
+     repos/benwilcock-org/springboot-sentiment-demo/hooks \
+     -f name='web' \
+     -f config[url]='https://jenkins.wibbles.duckdns.org/github-webhook/' \
+     -f config[content_type]='json' \
+     -f events[]='push' \
+     -F active=true
+   ```
+
+2. **Test webhook** with a commit or manual trigger:
+   ```bash
+   # Get webhook ID from previous command, then test
+   gh api -X POST repos/benwilcock-org/springboot-sentiment-demo/hooks/603227540/test
+   ```
+
+3. **Verify Jenkins receives webhook:**
+   - Push a test commit
+   - Check Jenkins job starts within 30 seconds
+   - Look for "Started by GitHub push" in build console
+
+4. **Check webhook delivery history** on GitHub:
+   - Go to repo **Settings > Webhooks > Recent Deliveries**
+   - Verify HTTP 200 responses
+   - If 404/500 errors, check Jenkins URL is accessible from internet
 
 ## Build Configuration Details
 
@@ -305,15 +395,54 @@ After every build (success or failure):
 
 ## Disaster Recovery
 
-If Jenkins server needs to be rebuilt:
+If Jenkins server needs to be rebuilt, follow these steps in order:
 
-1. **Install Jenkins** on new server (e.g., jenkins/jenkins:lts-jdk21)
-2. **Configure Maven tool** in Global Tool Configuration:
-   - Navigate to **Manage Jenkins > Global Tool Configuration > Maven**
-   - Add Maven with name: `maven-3` (exact match, case-sensitive)
-3. **Set up GitHub credentials** in **Manage Jenkins > Credentials**
-4. **Create job** following "Job Configuration Steps" above
-5. **Configure webhook** on GitHub repository
+### Step 1: Install Jenkins
+```bash
+# Example: Running Jenkins in Docker/Podman
+podman run -d -p 8080:8080 -p 50000:50000 \
+  --name jenkins \
+  -v jenkins_home:/var/jenkins_home \
+  jenkins/jenkins:lts-jdk21
+```
+
+### Step 2: Configure Maven Tool
+1. Navigate to **Manage Jenkins > Global Tool Configuration > Maven**
+2. Click **Add Maven**
+3. Name: `maven-3` (exact match, case-sensitive)
+4. Install automatically: ✓
+5. Save
+
+### Step 3: Set Up GitHub Credentials
+1. Navigate to **Manage Jenkins > Credentials**
+2. Add GitHub Personal Access Token or SSH key
+3. Note the credential ID for job configuration
+
+### Step 4: Create Jenkins Job
+Follow "Job Configuration Steps" section above to create the pipeline job.
+
+### Step 5: Create GitHub Webhook
+Use GitHub CLI for automated setup:
+
+```bash
+gh api --method POST \
+  -H "Accept: application/vnd.github+json" \
+  repos/benwilcock-org/springboot-sentiment-demo/hooks \
+  -f name='web' \
+  -f config[url]='https://jenkins.wibbles.duckdns.org/github-webhook/' \
+  -f config[content_type]='json' \
+  -F config[insecure_ssl]=0 \
+  -f events[]='push' \
+  -F active=true
+```
+
+### Step 6: Test Setup
+1. Trigger manual build: "Build Now"
+2. Verify build succeeds
+3. Test webhook: Make a test commit and push
+4. Verify automatic build triggers
+
+**Recovery time estimate:** 30-45 minutes for complete setup and testing.
 
 All pipeline logic is in the `Jenkinsfile` in the repository - no inline scripts to recover.
 
@@ -334,6 +463,12 @@ All pipeline logic is in the `Jenkinsfile` in the repository - no inline scripts
 1. Changed Maven tool from `Maven 3` to `maven-3` to match Jenkins configuration
 2. Removed JDK tool specification (uses Jenkins default JDK 21)
 3. Changed agent from `label 'linux && aarch64'` to `agent any`
+
+### Post-Migration Configuration
+
+- **GitHub Webhook created:** 2026-03-28 (webhook ID: 603227540)
+  - Enables automatic builds on push to `main` branch
+  - Created using GitHub CLI for reproducibility
 
 ## Related Documentation
 
