@@ -9,3 +9,4 @@ plugins:
 # Note for content editors, edit only the section below
 nav:
   - springboot-sentiment-demo Documentation: index.md
+  - Jenkins CI Configuration: jenkins.md
