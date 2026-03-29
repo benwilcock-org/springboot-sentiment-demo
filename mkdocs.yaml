@@ -1,5 +1,5 @@
 site_name: springboot-sentiment-demo
-site_description: Contains the techdocs for springboot-sentiment-demo
+site_description: Sentiment Analysis Microservice with Spring Boot 4.0 and DJL
 repo_url: https://github.com/benwilcock-org/springboot-sentiment-demo
 edit_uri: edit/main/docs
 
@@ -8,5 +8,12 @@ plugins:
 
 # Note for content editors, edit only the section below
 nav:
-  - springboot-sentiment-demo Documentation: index.md
-  - Jenkins CI Configuration: jenkins.md
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Reference:
+      - API Reference: api-reference.md
+      - Architecture: architecture.md
+  - Operations:
+      - Operations Guide: operations.md
+      - Troubleshooting: troubleshooting.md
+      - Jenkins CI: jenkins.md
