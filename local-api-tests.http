@@ -37,9 +37,36 @@ content-Type: application/json
 }
 
 ### Negative cases
-POST http://localhost:8080/api/analyze 
+POST http://localhost:8080/api/analyze
 content-Type: application/json
 
 {
   "sentence": ""
+}
+
+### Text Classification - Technology
+POST http://localhost:8080/api/classify
+Content-Type: application/json
+
+{
+  "text": "This new smartphone has amazing battery life and 5G connectivity",
+  "categories": ["technology", "food", "sports", "politics"]
+}
+
+### Text Classification - Food
+POST http://localhost:8080/api/classify
+Content-Type: application/json
+
+{
+  "text": "I love eating pizza and pasta with fresh mozzarella",
+  "categories": ["food", "technology", "sports"]
+}
+
+### Text Classification - Custom Categories
+POST http://localhost:8080/api/classify
+Content-Type: application/json
+
+{
+  "text": "The company reported strong quarterly earnings",
+  "categories": ["business", "sports", "entertainment", "politics"]
 }

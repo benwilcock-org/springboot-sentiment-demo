@@ -2,10 +2,12 @@
 
 ## Overview
 
-An enterprise-grade sentiment analysis microservice demonstrating modern Java ML integration. Built with **Spring Boot 4.0.5** and **Java 21 LTS**, this service analyzes text sentiment using a pre-trained **DistilBERT** model via Deep Java Library (DJL) and PyTorch.
+An enterprise-grade NLP microservice demonstrating modern Java ML integration. Built with **Spring Boot 4.0.5** and **Java 21 LTS**, this service provides sentiment analysis and zero-shot text classification using a pre-trained **DistilBERT** model via Deep Java Library (DJL) and PyTorch.
 
 **Key Capabilities:**
 - AI-powered sentiment classification (positive/negative)
+- Zero-shot text classification for custom categories
+- Unified model architecture (single download, dual capabilities)
 - RESTful API with JSON input/output
 - Production-ready Spring Boot microservice
 - Automatic ML model management
@@ -64,13 +66,15 @@ curl -X POST http://localhost:8080/api/analyze \
 ## Features
 
 ### AI/ML Capabilities
-- **Pre-trained DistilBERT Model** - State-of-the-art transformer for sentiment analysis
+- **Pre-trained DistilBERT Model** - State-of-the-art transformer for NLP tasks
+- **Unified Model Architecture** - Single model powers both sentiment analysis and text classification (memory efficient)
+- **Zero-Shot Classification** - Classify text into custom categories without training
 - **PyTorch Backend** - DJL 0.26 with graph executor optimization
 - **CPU-Optimized** - No GPU required
 - **Automatic Model Loading** - Downloaded and cached from DJL model zoo
 
 ### Spring Boot Integration
-- **RESTful API** - Clean, documented REST endpoint
+- **RESTful API** - Clean, documented REST endpoints (`/api/analyze`, `/api/classify`)
 - **OpenAPI Documentation** - Auto-generated API specs
 - **Actuator Monitoring** - Health checks and metrics
 - **Micrometer Tracing** - Distributed tracing support

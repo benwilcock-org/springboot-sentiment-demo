@@ -13,15 +13,9 @@ package com.sentiment.djldemo;
  * and limitations under the License.
  */
 
-import ai.djl.Application;
-import ai.djl.Device;
 import ai.djl.MalformedModelException;
-import ai.djl.inference.Predictor;
 import ai.djl.modality.Classifications;
-import ai.djl.repository.zoo.Criteria;
 import ai.djl.repository.zoo.ModelNotFoundException;
-import ai.djl.repository.zoo.ZooModel;
-import ai.djl.training.util.ProgressBar;
 import ai.djl.translate.TranslateException;
 
 import org.slf4j.Logger;
@@ -29,10 +23,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 /**
- * An example of inference using DistilBERT for Sentiment Analysis.
+ * Sentiment analyzer using unified zero-shot classification.
+ *
+ * <p>Delegates to {@link ZeroShotClassificationService} with fixed sentiment
+ * categories (Positive, Negative) for memory-efficient classification.
  *
  * <p>
  * See this <a
@@ -44,6 +42,11 @@ import java.util.Optional;
 public final class SentimentAnalyzer implements SentimentService{
 
     private static final Logger logger = LoggerFactory.getLogger(SentimentAnalyzer.class);
+    private final ZeroShotClassificationService zeroShotService;
+
+    public SentimentAnalyzer(ZeroShotClassificationService zeroShotService) {
+        this.zeroShotService = zeroShotService;
+    }
 
     public Optional<Classifications> predict(Optional<String> input)
             throws MalformedModelException, ModelNotFoundException, IOException,
@@ -54,17 +57,7 @@ public final class SentimentAnalyzer implements SentimentService{
         }
         logger.info("Performing a sentiment analysis on this sentence: '{}'", input.get());
 
-        Criteria<String, Classifications> criteria = Criteria.builder()
-                .optApplication(Application.NLP.SENTIMENT_ANALYSIS)
-                .setTypes(String.class, Classifications.class)
-                // This model was traced on CPU and can only run on CPU
-                .optDevice(Device.cpu())
-                .optProgress(new ProgressBar())
-                .build();
-
-        try (ZooModel<String, Classifications> model = criteria.loadModel();
-                Predictor<String, Classifications> predictor = model.newPredictor()) {
-            return Optional.of(predictor.predict(input.get()));
-        }
+        // Delegate to unified zero-shot service with sentiment categories
+        return zeroShotService.predict(input, Optional.of(List.of("Positive", "Negative")));
     }
 }

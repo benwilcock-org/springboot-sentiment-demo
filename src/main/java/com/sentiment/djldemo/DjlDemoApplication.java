@@ -19,13 +19,17 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@OpenAPIDefinition( 
-	tags = {@Tag(name = "sentiment-analysis", 
-                 description = "API operations used for obtaining a sentiment analysis.")},
-    info = @Info(title = "Sentiment Analysis API", version = "0.1-SNAPSHOT", 
-                 description = "An API for obtaining a sentiment analysis (percentage positive or negative) on a sentence that you provide."),
+@OpenAPIDefinition(
+	tags = {
+		@Tag(name = "sentiment-analysis",
+             description = "API operations used for obtaining a sentiment analysis."),
+		@Tag(name = "text-classification",
+             description = "API operations for zero-shot text classification.")
+	},
+    info = @Info(title = "NLP Analysis API", version = "0.1-SNAPSHOT",
+                 description = "REST API for NLP operations including sentiment analysis and zero-shot text classification using DJL. Both capabilities are powered by a unified DistilBERT model."),
     servers = {
-       @Server(url = "https://localhost:8080", description = "Sentiment analysis service running locally.")
+       @Server(url = "https://localhost:8080", description = "NLP analysis service running locally.")
     }
 ) 
 
