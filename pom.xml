@@ -18,7 +18,7 @@
 		<java.version>21</java.version>
 		<java.source>21</java.source>
 		<java.target>21</java.target>
-		<djl.starter.version>0.20</djl.starter.version>
+		<djl.starter.version>0.26</djl.starter.version>
 	</properties>
 	<dependencies>
 		<dependency>
