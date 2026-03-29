@@ -6,7 +6,7 @@ metadata:
   name: springboot-sentiment-demo
   description: Spring Boot Deep Java Learning (ML) Demo
   links:
-    - url: https://github.com/benwilcock-org/springboot-djl-demo
+    - url: https://github.com/benwilcock-org/springboot-sentiment-demo
       title: Source Code on GitHub
       icon: github
       type: source
@@ -42,8 +42,6 @@ metadata:
       icon: github
       type: source
   annotations:
-    # backstage.io/kubernetes-label-selector: "app.kubernetes.io/part-of=springboot-djl-demo"
-    # backstage.io/techdocs-ref: url:https://github.com/benwilcock/springboot-djl-demo/blob/main/
 spec:
   type: openapi
   lifecycle: production

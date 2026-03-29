@@ -19,7 +19,7 @@ This project demonstrates four key Backstage integration patterns:
 ### 1. Component Registration
 
 **catalog-info.yml** defines a Backstage Component entity:
-- **Kind**: `Component` named `springboot-djl-demo`
+- **Kind**: `Component` named `springboot-sentiment-demo`
 - **Metadata**: Rich description, tags (java, spring, web, tanzu), GitHub links
 - **Annotations**:
   - `backstage.io/techdocs-ref: dir:.` - Enables TechDocs from root directory
