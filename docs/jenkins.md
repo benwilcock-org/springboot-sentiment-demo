@@ -59,7 +59,7 @@ The pipeline requires Maven to be configured in Jenkins:
 The Jenkinsfile does **not** specify a JDK tool, which means:
 - Jenkins uses its default JDK (JDK 21 from the jenkins/jenkins:lts-jdk21 image)
 - No additional JDK configuration required in Global Tool Configuration
-- The project compiles with Java 17 target (configured in pom.xml), which is compatible with JDK 21
+- The project compiles with Java 21 target (configured in pom.xml), matching JDK 21
 
 ### Platform Notes
 The Jenkinsfile uses `agent any`, meaning:

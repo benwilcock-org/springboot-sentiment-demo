@@ -14,6 +14,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>djl-demo</name>
 	<description>Demo project for DJL and Spring Boot</description>
+	<!-- Upgraded 2026-03-29: Java 17→21, Spring Boot 3.1.4→4.0.5, DJL 0.20→0.26, SpringDoc 2.1.0→3.0.2, Maven 3.9.2→3.9.9 -->
 	<properties>
 		<java.version>21</java.version>
 		<java.source>21</java.source>

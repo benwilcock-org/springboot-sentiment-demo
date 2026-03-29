@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - API records with OpenAPI specifications
 - Jenkins CI integration for continuous integration monitoring
 
-**Implementation**: Spring Boot 3.5.7 sentiment analysis microservice using Deep Java Library (DJL) with PyTorch. Exposes REST API endpoint (`POST /api/analyze`) that accepts sentences and returns positive/negative sentiment probabilities using pre-trained DistilBERT model.
+**Implementation**: Spring Boot 4.0.5 sentiment analysis microservice using Deep Java Library (DJL) 0.26 with PyTorch and Java 21 LTS. Exposes REST API endpoint (`POST /api/analyze`) that accepts sentences and returns positive/negative sentiment probabilities using pre-trained DistilBERT model.
 
 ## Backstage Integration
 
@@ -150,11 +150,12 @@ Centralized exception management via **SentimentApiControllerAdvice**:
 
 ### Application Configuration
 - **DJL model selection**: `application.yml` configures `djl.application-type: SENTIMENT_ANALYSIS`
-- **Java 17 required**: Mockito agent setup in `pom.xml` requires `-XX:+EnableDynamicAgentLoading`
+- **Java 21 LTS required**: Mockito agent setup in `pom.xml` requires `-XX:+EnableDynamicAgentLoading`
 - **PyTorch engine only**: Only `pytorch-auto` dependency enabled (MXNet/TensorFlow commented out)
 - **OpenAPI generation**: `springdoc-openapi-maven-plugin` generates spec at `/v3/api-docs` during `mvnw verify`
 - **Tanzu Platform**: `workload.yml` defines Cartographer workload with auto-scaling (min=1)
 - **Startup test**: `ContextRefreshedEvent` listener runs test prediction to warm up model
+- **Upgrade history**: 2026-03-29: Java 17→21, Spring Boot 3.1.4→4.0.5, DJL 0.20→0.26, SpringDoc 2.1.0→3.0.2, Maven 3.9.2→3.9.9
 
 ## File Organization
 
