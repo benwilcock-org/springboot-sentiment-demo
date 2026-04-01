@@ -46,9 +46,12 @@ public class DjlDemoApplication {
 		SpringApplication.run(DjlDemoApplication.class, args);
 	}
 
+	// TODO: Add Actuator health indicator for DJL model availability
+	// TODO: Expose model version and metadata via /actuator/info endpoint
+
 	@EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) throws IOException, TranslateException, ModelException {
-        
+        // TODO: Move warm-up sentence to application.yml so it's configurable per environment
 		Classifications classifications = sentiments.predict(Optional.of("I like DJL. DJL is the best DL framework!")).get();
         logger.info(classifications.toString());
     }

@@ -46,6 +46,7 @@ public class SentimentApiControllerAdvice {
         LOG.error("There was a problem performing the sentiment analysis.", e);
     }
 
+    // TODO: Return HTTP 400 Bad Request for IllegalArgumentException instead of 500 - client sent bad input
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorDescription> handleException(IllegalArgumentException e) {
         LOG.error("There was a problem performing the sentiment analysis.", e);

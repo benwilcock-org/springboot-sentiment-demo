@@ -96,6 +96,7 @@ public class ZeroShotClassifier implements ZeroShotClassificationService {
 
         logger.debug("Loading classification model...");
 
+        // TODO: Cache the loaded ZooModel as a singleton bean to avoid reloading on each request
         // Build criteria for sentiment analysis model
         // We'll use it to score the relevance of text to each category
         Criteria<String, Classifications> criteria = Criteria.builder()
@@ -113,6 +114,7 @@ public class ZeroShotClassifier implements ZeroShotClassificationService {
             List<Double> scores = new ArrayList<>();
             String inputText = text.get();
 
+            // TODO: Run category predictions in parallel using CompletableFuture to reduce latency
             // For each category, create a combined prompt and get positive sentiment score
             // The positive score acts as a relevance score for that category
             for (String category : categoryList) {

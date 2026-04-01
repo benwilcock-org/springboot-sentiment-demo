@@ -45,7 +45,9 @@ public class SentimentApiController {
     @Autowired
     PercentageService percentages;
 
-    @CrossOrigin 
+    // TODO: Add rate limiting to prevent model abuse (e.g. Bucket4j or Spring Cloud Gateway)
+    // TODO: Require an API key via Authorization header once we onboard external consumers
+    @CrossOrigin
     @Operation(summary="Get a sentiment analysis on a sentence of text.",description="The API returns a sentiment analysis based on a predefined ML model.",tags={"Sentence"})
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SentimentAnalysis.class))),
@@ -60,6 +62,7 @@ public class SentimentApiController {
             throws MalformedModelException, ModelNotFoundException, IOException, TranslateException {
         LOG.info("A sentence has been received analysis: {}", sentence.sentence());
 
+        // TODO: Add max sentence length validation (suggested limit: 512 tokens for DistilBERT)
         if (!isNullOrEmptyOrContainsNoWords(sentence.sentence)) {
 
             // Perform the sentiment analysis on the sentence
@@ -103,6 +106,7 @@ public class SentimentApiController {
 
     }
 
+    // TODO: Extract validation logic into a dedicated SentenceValidator component for reuse
     private boolean isNullOrEmptyOrContainsNoWords(String str) {
         return str == null || str.trim().isEmpty() || !str.matches(".*\\w.*");
     }

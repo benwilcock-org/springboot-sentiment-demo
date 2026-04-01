@@ -57,6 +57,7 @@ public final class SentimentAnalyzer implements SentimentService{
         }
         logger.info("Performing a sentiment analysis on this sentence: '{}'", input.get());
 
+        // TODO: Add Micrometer metrics here to track prediction latency and throughput
         // Delegate to unified zero-shot service with sentiment categories
         return zeroShotService.predict(input, Optional.of(List.of("Positive", "Negative")));
     }
