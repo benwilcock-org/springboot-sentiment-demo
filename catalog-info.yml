@@ -17,7 +17,9 @@ metadata:
   annotations:
     backstage.io/kubernetes-id: springboot-sentiment-demo
     backstage.io/techdocs-ref: dir:.
+    backstage.io/source-location: url:https://github.com/benwilcock-org/springboot-sentiment-demo
     github.com/project-slug: benwilcock-org/springboot-sentiment-demo
+    openssf/scorecard-location: https://api.securityscorecards.dev/projects/github.com/benwilcock-org/springboot-sentiment-demo
     jenkins.io/job-full-name: benwilcock-org/springboot-sentiment-demo
 spec:
   type: api
