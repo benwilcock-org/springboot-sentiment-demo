@@ -19,7 +19,7 @@ metadata:
     backstage.io/techdocs-ref: dir:.
     backstage.io/source-location: url:https://github.com/benwilcock-org/springboot-sentiment-demo
     github.com/project-slug: benwilcock-org/springboot-sentiment-demo
-
+    github.com/dependabot: "true"
     jenkins.io/job-full-name: benwilcock-org/springboot-sentiment-demo
 spec:
   type: api
