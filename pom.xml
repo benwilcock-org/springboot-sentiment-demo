@@ -59,7 +59,7 @@
 			<!-- GoTo http://localhost:8080/v3/api-docs -->
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
-			<version>3.0.2</version>
+			<version>3.1.0</version>
 		</dependency>
 
 		<dependency>
