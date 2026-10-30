@@ -21,8 +21,8 @@ pipeline {
     }
 
     triggers {
-        // Weekly build every Monday around 8 AM
-        cron('H 8 * * 1')
+        // Daily at 06:00 — early morning trial cadence (away from Plex peak)
+        cron('0 6 * * *')
     }
 
     stages {
